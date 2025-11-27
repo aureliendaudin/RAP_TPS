@@ -49,6 +49,7 @@ On l'a remplacé par une architecture GRU bidirectionnelle, qui traite chaque fr
 Le modèle bidirectionnel BidirGRU_CTC est composé de plusieurs couches GRU empilées avec dropout, d’une couche linéaire projetant vers le nombre de classes, puis entraîné avec l’optimiseur Adam et la loss CTC standard. Les performances sont suivies à l’aide d’un Character Error Rate simple, ce qui permet de quantifier la réduction des erreurs de transcription apportée par le passage du GRU unidirectionnel au GRU bidirectionnel.
 
 Exemples de séquences générées après 50 epochs:
+
 - tgt: he buried his biscuit under a layer of jam over which he spread a thick coating of honey
 - prd: he beried his bis kit underaly ov jan over woich i srit y thik comneg o hany
 
@@ -79,5 +80,6 @@ Dans les premières époques, les séquences générées sont incorrectes ou vid
 - prediction: the an the ore the the the the ore ore the the the the the the the the of the an the the ore the there.
 
 Mais elles se structurent progressivement en sorties plus cohérentes:
+
 - target:     sattler was tried for murder and convicted#
 - prediction: satler was tried for murder, and convicted.
