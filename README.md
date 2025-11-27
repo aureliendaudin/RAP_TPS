@@ -3,16 +3,19 @@
 
 Ce TP met en place un système de reconnaissance de parole de bout en bout sur le corpus LibriSpeech et LJSpeech en utilisant des caractéristiques MFCC comme entrée et différentes architectures entraînées avec une loss CTC.
 
-## Pipeline
+## MLP
 
-Les signaux audio du corpus LibriSpeech sont rééchantillonnés à 16 kHz, convertis en MFCC, normalisés et regroupés en batches via une fonction de collate qui gère le padding temporel et l’empilement des séquences. Les transcriptions sont normalisées en minuscules, restreintes à un vocabulaire simple (espace, apostrophe, lettres a–z) puis encodées en entiers pour servir de cibles au critère CTC.
+### Pipeline
+
+Les signaux audio du corpus LibriSpeech sont rééchantillonnés à 16 kHz, convertis en MFCC, normalisés et regroupés en batches via une fonction de collate qui gère le padding temporel et l’empilement des séquences. Les transcriptions sont normalisées en minuscules, restreintes à un vocabulaire simple (espace, apostrophe, lettres a–z) puis encodées en entiers pour servir de cibles au critère CTC. Nous avons aussi ajouté l'encodage pour le CTC-blank, un caractère spécial pour permettre la prédiction de deux lettres consécutives comme dans le mot "hello".
 
 Résumé de la pipeline :
+- Convertion du signal en MFCC.
 - Encodage des target en convertissant les char en int.
 - Entrainement du modèle avec la loss CTC
 - Prédiction du modèle puis utilisation du gready CTC pour afficher la prédiction et la comparer à la target.
 
-## Analyse des résultats
+### Analyse des résultats
 
 Exemples de prédictions pour le MLP après 50 epochs :
   - tgt: i emphasised complacently
@@ -20,7 +23,9 @@ Exemples de prédictions pour le MLP après 50 epochs :
 
 Le manque de contexte empêche le MLP de comprendre le liens entre les lettres des alentours et donc le concept de mot.
 
-Solution utilisation du CNN pour ajouter une notion de window et donc de contexte et de dépendance temporelle dans l'audio.
+## CNN
+
+Solution utilisation du CNN pour ajouter une notion de window et donc de contexte et de dépendance temporelle dans l'audio. De plus, le MFCC sont une version compressée via une transformée en cosinus alors que MelSpectrogram représente directement l’énergie du signal sur l’échelle de Mel et est donc plus adapté aux CNN, car il préserve davantage la structure spatiale du spectre que les MFCC, qui l’aplatissent et réduisent l’information.
 
 Exemples de prédictions pour le CNN après 50 epochs :
 
@@ -83,3 +88,9 @@ Mais elles se structurent progressivement en sorties plus cohérentes:
 
 - target:     sattler was tried for murder and convicted#
 - prediction: satler was tried for murder, and convicted.
+
+# Conclusion
+
+Ce projet montre bien les forces et faiblesses des différentes briques testées pour la reconnaissance de parole de bout en bout. Le MLP, sans mémoire ni contexte, reste bloqué à des sorties très bruitées au niveau caractère, quand le CNN exploite mieux la structure temps–fréquence mais peine encore sur les espaces et la segmentation des mots. Le GRU bidirectionnel tire pleinement parti du contexte passé et futur pour stabiliser les transcriptions, au prix d’une moindre applicabilité en temps réel, tandis que le Transformer encoder–decoder capte le mieux les dépendances longues et produit les phrases les plus cohérentes, au prix d’une complexité et de besoins en données plus élevés. 
+
+Au vu des résultats, le compromis le plus adapté dans ce TP est le GRU bidirectionnel : il améliore nettement la qualité des transcriptions par rapport au MLP et au CNN, tout en restant plus simple à entraîner et moins exigeant qu’un Transformer complet pour de la reconnaissance de parole caractère par caractère. Si l'exigeance d'entrainement et du nombre de données n'est pas un problème alors le Transformer est celui qui arrivera aux meilleurs résultats au prix du coup d'entrainement.
